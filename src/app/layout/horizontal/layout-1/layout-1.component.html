@@ -43,11 +43,6 @@
                 <content></content>
                 <!-- / CONTENT -->
 
-                <!-- FOOTER: Below -->
-                <ng-container *ngIf="fuseConfig.layout.footer.position === 'above-static'">
-                    <ng-container *ngTemplateOutlet="footer"></ng-container>
-                </ng-container>
-                <!-- / FOOTER: Below -->
 
             </div>
 
@@ -56,9 +51,7 @@
     </div>
 
     <!-- FOOTER: Above -->
-    <ng-container *ngIf="fuseConfig.layout.footer.position === 'above-fixed'">
-        <ng-container *ngTemplateOutlet="footer"></ng-container>
-    </ng-container>
+  
     <!-- FOOTER: Above -->
 
 </div>
@@ -76,10 +69,6 @@
     <quick-panel></quick-panel>
 </fuse-sidebar>
 <!-- / QUICK PANEL -->
-
-<!-- ----------------------------------------------------------------------------------------------------- -->
-<!-- @ PARTIALS
-<!-- ----------------------------------------------------------------------------------------------------- -->
 
 <!-- TOOLBAR -->
 <ng-template #toolbar>
