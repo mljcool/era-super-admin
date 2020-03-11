@@ -11,13 +11,13 @@ import { FuseConfig } from '@fuse/types';
 export const fuseConfig: FuseConfig = {
     layout          : {
         style    : 'vertical-layout-1',
-        width    : 'fullwidth',
+        width    : 'boxed',
         navbar   : {
             background: 'mat-fuse-dark-700-bg',
             folded    : false,
             hidden    : false,
             position  : 'left',
-            variant   : 'vertical-style-1'
+            variant   : 'vertical-style-2'
         },
         toolbar  : {
             background: 'mat-white-500-bg',
