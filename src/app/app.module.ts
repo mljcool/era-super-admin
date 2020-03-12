@@ -16,13 +16,15 @@ import { fuseConfig } from 'app/fuse-config';
 
 import { AppComponent } from 'app/app.component';
 import { LayoutModule } from 'app/layout/layout.module';
-import { SampleModule } from 'app/main/sample/sample.module';
+import { ListOfShopModule } from './main/pages/list-of-shops/list-of-shops.module';
 
 const appRoutes: Routes = [
+    { path: '', redirectTo: 'auth', pathMatch: 'full' },
     {
-        path      : '**',
-        redirectTo: 'sample'
-    }
+        path: 'auth',
+        loadChildren:
+            './main/pages/authentication/login/login.module#LoginModule'
+    },
 ];
 
 @NgModule({
@@ -53,7 +55,7 @@ const appRoutes: Routes = [
 
         // App modules
         LayoutModule,
-        SampleModule
+        ListOfShopModule
     ],
     bootstrap   : [
         AppComponent

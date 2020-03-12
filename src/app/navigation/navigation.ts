@@ -7,15 +7,13 @@ export const navigation: FuseNavigation[] = [
         type     : 'group',
         children : [
             {
-                id       : 'sample',
-                title    : 'Sample',
-                translate: 'NAV.SAMPLE.TITLE',
+                id       : 'list-of-shops',
+                title    : 'list of shops',
                 type     : 'item',
                 icon     : 'email',
-                url      : '/sample',
+                url      : '/list-of-shops',
                 badge    : {
                     title    : '25',
-                    translate: 'NAV.SAMPLE.BADGE',
                     bg       : '#F44336',
                     fg       : '#FFFFFF'
                 }
