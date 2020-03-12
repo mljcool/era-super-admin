@@ -25,7 +25,7 @@ export class ShopListRenderComponent implements OnInit, OnDestroy
     contacts: any;
     user: any;
     dataSource: FilesDataSource | null;
-    displayedColumns = ['checkbox', 'name', 'email', 'phone', 'jobTitle', 'buttons'];
+    displayedColumns = ['name', 'email', 'phone', 'address', 'buttons'];
     selectedContacts: any[];
     checkboxes: {};
     dialogRef: any;

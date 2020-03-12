@@ -12,19 +12,19 @@
                 <div class="nav-item" aria-label="inbox">
                     <a class="nav-link" matRipple (click)="changeFilter('all')"
                        [ngClass]="{'active mat-accent-bg':filterBy ==='all'}">
-                        <span class="title">All Contacts</span>
+                        <span class="title">All Auto Shop</span>
                     </a>
                 </div>
 
-                <div class="nav-item" aria-label="frequently contacted" (click)="changeFilter('frequent')">
-                    <a class="nav-link" matRipple [ngClass]="{'active mat-accent-bg':filterBy ==='frequent'}">
-                        <div class="title">Freequently contacted</div>
+                <div class="nav-item" aria-label="frequently contacted" (click)="changeFilter('ACCEPTED')">
+                    <a class="nav-link" matRipple [ngClass]="{'active mat-accent-bg':filterBy ==='ACCEPTED'}">
+                        <div class="title">Accepted</div>
                     </a>
                 </div>
 
-                <div class="nav-item" aria-label="starred" (click)="changeFilter('starred')">
-                    <a class="nav-link" matRipple [ngClass]="{'active mat-accent-bg':filterBy ==='starred'}">
-                        <div class="title">Starred Contacts</div>
+                <div class="nav-item" aria-label="starred" (click)="changeFilter('DECLINED')">
+                    <a class="nav-link" matRipple [ngClass]="{'active mat-accent-bg':filterBy ==='DECLINED'}">
+                        <div class="title">Decline</div>
                     </a>
                 </div>
             </div>

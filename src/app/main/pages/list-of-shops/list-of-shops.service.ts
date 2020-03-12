@@ -1,16 +1,46 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/router';
+import {
+    ActivatedRouteSnapshot,
+    Resolve,
+    RouterStateSnapshot
+} from '@angular/router';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 import { FuseUtils } from '@fuse/utils';
 import { Shop } from './shop.model';
 import { SampleList, SampleUser } from './contants/db';
+import {
+    AngularFirestoreCollection,
+    AngularFirestore
+} from '@angular/fire/firestore';
+import { map } from 'rxjs/operators';
 
+export interface IShopLocation {
+    latitude: number;
+    longitude: number;
+}
+
+export interface IAutoShop {
+    uid: string;
+    isRegisteredShop: boolean;
+    status: boolean;
+    email: string;
+    mainName: string;
+    secondaryName: string;
+    mainContact: string;
+    emailAddress: string;
+    secondaryContact: string;
+    writtenAddress: string;
+    location: any;
+    functionalLocation: IShopLocation;
+}
 
 @Injectable()
-export class ShopListService implements Resolve<any>
-{
+export class ShopListService implements Resolve<any> {
+    private dbPath = '/autoShop';
+    shopsRef: AngularFirestoreCollection<IAutoShop> = null;
+
     onContactsChanged: BehaviorSubject<any>;
     onSelectedContactsChanged: BehaviorSubject<any>;
     onUserDataChanged: BehaviorSubject<any>;
@@ -30,15 +60,16 @@ export class ShopListService implements Resolve<any>
      * @param {HttpClient} _httpClient
      */
     constructor(
-        private _httpClient: HttpClient
-    )
-    {
+        private _httpClient: HttpClient,
+        private afs: AngularFirestore
+    ) {
         // Set the defaults
         this.onContactsChanged = new BehaviorSubject([]);
         this.onSelectedContactsChanged = new BehaviorSubject([]);
         this.onUserDataChanged = new BehaviorSubject([]);
         this.onSearchTextChanged = new Subject();
         this.onFilterChanged = new Subject();
+        this.shopsRef = afs.collection(this.dbPath);
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -52,16 +83,13 @@ export class ShopListService implements Resolve<any>
      * @param {RouterStateSnapshot} state
      * @returns {Observable<any> | Promise<any> | any}
      */
-    resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<any> | Promise<any> | any
-    {
+    resolve(
+        route: ActivatedRouteSnapshot,
+        state: RouterStateSnapshot
+    ): Observable<any> | Promise<any> | any {
         return new Promise((resolve, reject) => {
-
-            Promise.all([
-                this.getShops(),
-                this.getUserData()
-            ]).then(
+            Promise.all([this.getShops(), this.getUserData()]).then(
                 ([files]) => {
-
                     this.onSearchTextChanged.subscribe(searchText => {
                         this.searchText = searchText;
                         this.getShops();
@@ -73,11 +101,29 @@ export class ShopListService implements Resolve<any>
                     });
 
                     resolve();
-
                 },
                 reject
             );
         });
+    }
+
+    accpetedOrDeclined(key: string, statusType: any): Promise<any> {
+        const params = {
+            status: statusType
+        };
+        
+        return this.shopsRef.doc(key || '').update(params);
+    }
+
+    getAuthoShopList(): Observable<any[]> {
+        return this.shopsRef.snapshotChanges().pipe(
+            map(changes =>
+                changes.map(c => ({
+                    key: c.payload.doc.id,
+                    ...c.payload.doc.data()
+                }))
+            )
+        );
     }
 
     /**
@@ -85,41 +131,38 @@ export class ShopListService implements Resolve<any>
      *
      * @returns {Promise<any>}
      */
-    getShops(): Promise<any>
-    {
+    getShops(): Promise<any> {
         return new Promise((resolve, reject) => {
-                // this._httpClient.get('api/shops-shops')
-                //     .subscribe((response: any) => {
-                        this.shops = SampleList;
+            this.getAuthoShopList().subscribe(response => {
+                this.shops = response;
+                console.log(this.shops);
+                if (this.filterBy === 'ACCEPTED') {
+                    this.shops = this.shops.filter(_contact => {
+                        return _contact.status === this.filterBy;
+                    });
+                }
 
-                        if ( this.filterBy === 'starred' )
-                        {
-                            this.shops = this.shops.filter(_contact => {
-                                return this.user.starred.includes(_contact.id);
-                            });
-                        }
+                if (this.filterBy === 'DECLINED') {
+                    this.shops = this.shops.filter(_contact => {
+                        return _contact.status === this.filterBy;
+                    });
+                }
 
-                        if ( this.filterBy === 'frequent' )
-                        {
-                            this.shops = this.shops.filter(_contact => {
-                                return this.user.frequentContacts.includes(_contact.id);
-                            });
-                        }
+                if (this.searchText && this.searchText !== '') {
+                    this.shops = FuseUtils.filterArrayByString(
+                        this.shops,
+                        this.searchText
+                    );
+                }
 
-                        if ( this.searchText && this.searchText !== '' )
-                        {
-                            this.shops = FuseUtils.filterArrayByString(this.shops, this.searchText);
-                        }
+                this.shops = this.shops.map(contact => {
+                    return new Shop(contact);
+                });
 
-                        this.shops = this.shops.map(contact => {
-                            return new Shop(contact);
-                        });
-
-                        this.onContactsChanged.next(this.shops);
-                        resolve(this.shops);
-                    // }, reject);
-            }
-        );
+                this.onContactsChanged.next(this.shops);
+                resolve(this.shops);
+            });
+        });
     }
 
     /**
@@ -127,17 +170,15 @@ export class ShopListService implements Resolve<any>
      *
      * @returns {Promise<any>}
      */
-    getUserData(): Promise<any>
-    {
+    getUserData(): Promise<any> {
         return new Promise((resolve, reject) => {
-                // this._httpClient.get('api/shops-user/5725a6802d10e277a0f35724')
-                //     .subscribe((response: any) => {
-                        this.user = SampleUser;
-                        this.onUserDataChanged.next(this.user);
-                        resolve(this.user);
-                    // }, reject);
-            }
-        );
+            // this._httpClient.get('api/shops-user/5725a6802d10e277a0f35724')
+            //     .subscribe((response: any) => {
+            this.user = SampleUser;
+            this.onUserDataChanged.next(this.user);
+            resolve(this.user);
+            // }, reject);
+        });
     }
 
     /**
@@ -145,15 +186,12 @@ export class ShopListService implements Resolve<any>
      *
      * @param id
      */
-    toggleSelectedShop(id): void
-    {
+    toggleSelectedShop(id): void {
         // First, check if we already have that contact as selected...
-        if ( this.selectedContacts.length > 0 )
-        {
+        if (this.selectedContacts.length > 0) {
             const index = this.selectedContacts.indexOf(id);
 
-            if ( index !== -1 )
-            {
+            if (index !== -1) {
                 this.selectedContacts.splice(index, 1);
 
                 // Trigger the next event
@@ -174,14 +212,10 @@ export class ShopListService implements Resolve<any>
     /**
      * Toggle select all
      */
-    toggleSelectAll(): void
-    {
-        if ( this.selectedContacts.length > 0 )
-        {
+    toggleSelectAll(): void {
+        if (this.selectedContacts.length > 0) {
             this.deselectContacts();
-        }
-        else
-        {
+        } else {
             this.selectContacts();
         }
     }
@@ -192,13 +226,11 @@ export class ShopListService implements Resolve<any>
      * @param filterParameter
      * @param filterValue
      */
-    selectContacts(filterParameter?, filterValue?): void
-    {
+    selectContacts(filterParameter?, filterValue?): void {
         this.selectedContacts = [];
 
         // If there is no filter, select all shops
-        if ( filterParameter === undefined || filterValue === undefined )
-        {
+        if (filterParameter === undefined || filterValue === undefined) {
             this.selectedContacts = [];
             this.shops.map(contact => {
                 this.selectedContacts.push(contact.id);
@@ -215,11 +247,10 @@ export class ShopListService implements Resolve<any>
      * @param contact
      * @returns {Promise<any>}
      */
-    updateContact(contact): Promise<any>
-    {
+    updateContact(contact): Promise<any> {
         return new Promise((resolve, reject) => {
-
-            this._httpClient.post('api/shops-shops/' + contact.id, {...contact})
+            this._httpClient
+                .post('api/shops-shops/' + contact.id, { ...contact })
                 .subscribe(response => {
                     this.getShops();
                     resolve(response);
@@ -233,10 +264,10 @@ export class ShopListService implements Resolve<any>
      * @param userData
      * @returns {Promise<any>}
      */
-    updateUserData(userData): Promise<any>
-    {
+    updateUserData(userData): Promise<any> {
         return new Promise((resolve, reject) => {
-            this._httpClient.post('api/shops-user/' + this.user.id, {...userData})
+            this._httpClient
+                .post('api/shops-user/' + this.user.id, { ...userData })
                 .subscribe(response => {
                     this.getUserData();
                     this.getShops();
@@ -248,8 +279,7 @@ export class ShopListService implements Resolve<any>
     /**
      * Deselect shops
      */
-    deselectContacts(): void
-    {
+    deselectContacts(): void {
         this.selectedContacts = [];
 
         // Trigger the next event
@@ -261,8 +291,7 @@ export class ShopListService implements Resolve<any>
      *
      * @param contact
      */
-    deleteContact(contact): void
-    {
+    deleteContact(contact): void {
         const contactIndex = this.shops.indexOf(contact);
         this.shops.splice(contactIndex, 1);
         this.onContactsChanged.next(this.shops);
@@ -271,10 +300,8 @@ export class ShopListService implements Resolve<any>
     /**
      * Delete selected shops
      */
-    deleteSelectedContacts(): void
-    {
-        for ( const contactId of this.selectedContacts )
-        {
+    deleteSelectedContacts(): void {
+        for (const contactId of this.selectedContacts) {
             const contact = this.shops.find(_contact => {
                 return _contact.id === contactId;
             });
@@ -284,5 +311,4 @@ export class ShopListService implements Resolve<any>
         this.onContactsChanged.next(this.shops);
         this.deselectContacts();
     }
-
 }

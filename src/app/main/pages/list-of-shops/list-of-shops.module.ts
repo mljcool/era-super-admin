@@ -22,6 +22,13 @@ import { ShopMainSidebarComponent } from './sidebars/main/main.component';
 import { ShopssSelectedBarComponent } from './selected-bar/selected-bar.component';
 import { ShopFormDialogComponent } from './shop-form/shop-form.component';
 
+import { AngularFireModule } from '@angular/fire';
+import {
+    AngularFirestoreModule,
+    FirestoreSettingsToken
+} from '@angular/fire/firestore';
+import { environment } from 'environments/environment';
+
 
 const routes: Routes = [
     {
@@ -57,7 +64,9 @@ const routes: Routes = [
 
         FuseSharedModule,
         FuseConfirmDialogModule,
-        FuseSidebarModule
+        FuseSidebarModule,
+        AngularFireModule.initializeApp(environment.firebase),
+        AngularFirestoreModule
     ],
     providers: [ShopListService],
     entryComponents: [ShopFormDialogComponent]

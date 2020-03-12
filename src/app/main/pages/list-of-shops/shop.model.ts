@@ -1,19 +1,27 @@
 import { FuseUtils } from '@fuse/utils';
 
+export interface IShopLocation {
+    latitude: number;
+    longitude: number;
+}
+
+
 export class Shop
 {
-    id: string;
-    name: string;
-    lastName: string;
-    avatar: string;
-    nickname: string;
-    company: string;
-    jobTitle: string;
+
+    uid: string;
+    isRegisteredShop: boolean;
+    status: boolean | string;
     email: string;
-    phone: string;
-    address: string;
-    birthday: string;
-    notes: string;
+    mainName: string;
+    secondaryName: string;
+    mainContact: string;
+    emailAddress: string;
+    secondaryContact: string;
+    writtenAddress: string;
+    location: any;
+    functionalLocation: IShopLocation;
+    id: string;
 
     /**
      * Constructor
@@ -23,18 +31,19 @@ export class Shop
     constructor(contact)
     {
         {
-            this.id = contact.id || FuseUtils.generateGUID();
-            this.name = contact.name || '';
-            this.lastName = contact.lastName || '';
-            this.avatar = contact.avatar || 'assets/images/avatars/profile.jpg';
-            this.nickname = contact.nickname || '';
-            this.company = contact.company || '';
-            this.jobTitle = contact.jobTitle || '';
+            this.id = contact.id || '';
+            this.uid = contact.uid || FuseUtils.generateGUID();
+            this.isRegisteredShop = contact.name || '';
+            this.status = contact.lastName || '';
             this.email = contact.email || '';
-            this.phone = contact.phone || '';
-            this.address = contact.address || '';
-            this.birthday = contact.birhday || '';
-            this.notes = contact.notes || '';
+            this.mainName = contact.mainName || '';
+            this.secondaryName = contact.secondaryName || '';
+            this.mainContact = contact.mainContact || '';
+            this.emailAddress = contact.emailAddress || '';
+            this.secondaryContact = contact.secondaryContact || '';
+            this.writtenAddress = contact.writtenAddress || '';
+            this.location = contact.location || '';
+            this.functionalLocation = contact.functionalLocation || {};
         }
     }
 }
